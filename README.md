@@ -1,4 +1,1 @@
-cloaked-octo-spice
-==================
-
-HydroLogger2 Code
+Cloaked-Octo-Spice EMIT Code
