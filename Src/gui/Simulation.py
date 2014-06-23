@@ -12,6 +12,7 @@ import wx
 import wx.xrc
 from os.path import isfile
 from ResultsDisplay import ModelFrame
+from FloatCanvasFrame import DrawFrame
 
 
 ###########################################################################
@@ -66,7 +67,7 @@ class SimulationCtrl ( wx.Panel ):
             self.selectedFile = f
 
     def Buttonclick2(self, event):
-        #GUIframe = PyPanel(self)
+        #GUIframe = DrawFrame(self)
         #GUIframe.Show()
         self.Layout()
 

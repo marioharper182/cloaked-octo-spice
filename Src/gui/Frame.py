@@ -8,6 +8,7 @@ import pygame
 from Simulation import SimulationCtrl
 from PyGamePanel import PyPanel
 from os.path import isfile
+from FloatCanvasFrame import DrawFrame
 
 ###########################################################################
 ## Class MyFrame1
@@ -35,7 +36,8 @@ class MyFrame1 ( wx.Frame ):
 
         self.m_mgr.AddPane(self.pnlSimulation, wx.aui.AuiPaneInfo().Left().CloseButton( False ).MaximizeButton( True ).MinimizeButton( True ).PinButton( True ).Resizable().MinSize(wx.Size(300,300)).Floatable() )
 
-        self.pnlPy = PyPanel(self.pnlDocking)
+        #self.pnlPy = PyPanel(self.pnlDocking)
+        self.pnlPy = DrawFrame(self.pnlDocking)
 
         self.m_mgr.AddPane(self.pnlPy, wx.aui.AuiPaneInfo().Center().Position(0).CloseButton( False ).MaximizeButton( True ).MinimizeButton( True ).PinButton( True ).Resizable().Floatable() )
 
