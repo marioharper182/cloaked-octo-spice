@@ -6,7 +6,7 @@ sys.path.append("..")
 from wx.lib.floatcanvas import NavCanvas
 from wx.lib.floatcanvas import FloatCanvas as FC
 
-from FloatCanvasFlow import LayoutTree, NodeObject, MovingTextBox, TraverseTree, ConnectorLine
+from CanvasLogic import LayoutTree, NodeObject, MovingTextBox, TraverseTree, ConnectorLine
 #from Simulation import f
 
 #print f
@@ -34,22 +34,9 @@ Model1 = TreeNode("Model1", [VP1, VP2])
 Model2 = TreeNode("Model2", [TreeNode("Result1"), TreeNode("Result2")])
 elements = TreeNode("Root", [Model1, Model2])
 
-def LayoutTree(root, x, y, level):
-    NumNodes = len(root.Children)
-    root.Point = (x,y)
-    x += root.dx
-    y += (root.dy * level * (NumNodes-1) / 2.0)
-    for node in root.Children:
-        LayoutTree(node, x, y, level-1)
-        y -= root.dy * level
 
-def TraverseTree(root, func):
-    func(root)
-    for child in (root.Children):
-        TraverseTree(child, func)
 
-#class DrawFrame(wx.Frame):
-class DrawFrame(wx.Panel):
+class Canvas(NavCanvas.NavCanvas):
 
     """
     A simple frame, call this class for the button
@@ -57,34 +44,57 @@ class DrawFrame(wx.Panel):
     """
 
     def __init__(self, *args, **kwargs):
-        wx.Panel.__init__(self, *args, **kwargs)
+        NavCanvas.NavCanvas.__init__(self, *args,**kwargs)
 
         #self.CreateStatusBar()
         # Add the Canvas
-        Canvas = NavCanvas.NavCanvas(self,-1,(500,500),
-                                          ProjectionFun = None,
-                                          Debug = 0,
-                                          BackgroundColor = "White",
-                                          ).Canvas
-
-        self.Canvas = Canvas
 
 
-        Canvas.Bind(FC.EVT_MOTION, self.OnMove )
-        Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
 
         self.elements = elements
         LayoutTree(self.elements, 0, 0, 3)
         self.AddTree(self.elements)
 
 
-        self.Show(True)
         self.Canvas.ZoomToBB()
-
         self.MoveObject = None
         self.Moving = False
 
-        return None
+        self.initBindings()
+
+
+    def initBindings(self):
+        self.Canvas.Bind(FC.EVT_MOTION, self.OnMove )
+        self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
+
+    def OnMove(self, event):
+        """
+        Updates the status bar with the world coordinates
+        and moves the object it is clicked on
+
+        """
+        #self.SetStatusText("%.4f, %.4f"%tuple(event.Coords))
+
+        if self.Moving:
+            dxy = event.GetPosition() - self.StartPoint
+            # Draw the Moving Object:
+            dc = wx.ClientDC(self.Canvas)
+            dc.SetPen(wx.Pen('WHITE', 2, wx.SHORT_DASH))
+            dc.SetBrush(wx.TRANSPARENT_BRUSH)
+            dc.SetLogicalFunction(wx.XOR)
+            if self.MoveObject is not None:
+                dc.DrawPolygon(self.MoveObject)
+            self.MoveObject = self.StartObject + dxy
+            dc.DrawPolygon(self.MoveObject)
+
+    def OnLeftUp(self, event):
+        if self.Moving:
+            self.Moving = False
+            if self.MoveObject is not None:
+                dxy = event.GetPosition() - self.StartPoint
+                dxy = self.Canvas.ScalePixelToWorld(dxy)
+                self.MovingObject.Move(dxy)
+            self.Canvas.Draw(True)
 
     def AddTree(self, root):
         Nodes = []
@@ -96,7 +106,7 @@ class DrawFrame(wx.Panel):
                 object = NodeObject(node.Name,
                                     node.Point,
                                     (15, 4),
-                                    BackgroundColor = "BLUE",
+                                    BackgroundColor = "LIGHT BLUE",
                                     TextColor = "Black",
                                     )
             else:
@@ -137,35 +147,44 @@ class DrawFrame(wx.Panel):
             self.MoveObject = None
             self.MovingObject = object
 
-    def OnMove(self, event):
-        """
-        Updates the status bar with the world coordinates
-        and moves the object it is clicked on
 
-        """
-        #self.SetStatusText("%.4f, %.4f"%tuple(event.Coords))
+    def LayoutTree(root, x, y, level):
+        NumNodes = len(root.Children)
+        root.Point = (x,y)
+        x += root.dx
+        y += (root.dy * level * (NumNodes-1) / 2.0)
+        for node in root.Children:
+            LayoutTree(node, x, y, level-1)
+            y -= root.dy * level
 
-        if self.Moving:
-            dxy = event.GetPosition() - self.StartPoint
-            # Draw the Moving Object:
-            dc = wx.ClientDC(self.Canvas)
-            dc.SetPen(wx.Pen('WHITE', 2, wx.SHORT_DASH))
-            dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            dc.SetLogicalFunction(wx.XOR)
-            if self.MoveObject is not None:
-                dc.DrawPolygon(self.MoveObject)
-            self.MoveObject = self.StartObject + dxy
-            dc.DrawPolygon(self.MoveObject)
+    def TraverseTree(root, func):
+        func(root)
+        for child in (root.Children):
+            TraverseTree(child, func)
 
-    def OnLeftUp(self, event):
-        if self.Moving:
-            self.Moving = False
-            if self.MoveObject is not None:
-                dxy = event.GetPosition() - self.StartPoint
-                dxy = self.Canvas.ScalePixelToWorld(dxy)
-                self.MovingObject.Move(dxy)
-            self.Canvas.Draw(True)
+#class DrawFrame(wx.Frame):
+class MyFrame2(wx.Frame):
+    def __init__(self, parent):
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY,
+                        title = wx.EmptyString, pos = wx.DefaultPosition,
+                        size = wx.Size( 900,600 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        draw = Canvas(self )
+        '''
+        canvas = NavCanvas.NavCanvas(id=wx.ID_ANY,parent=self,
+                          ProjectionFun = None,
+                          Debug = 0,
+                          BackgroundColor = "White",
+                          )
+        '''
 
-app = wx.App(0)
-#DrawFrame(None,title="FloatCanvas GUI", size = (750,750) )
+
+def SimpleFrame(parent):
+    return MyFrame2(parent)
+'''
+app = wx.App(False)
+frame = SimpleFrame(None)
+frame.Show(True)
+
 app.MainLoop()
+'''
+

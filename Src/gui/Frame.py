@@ -3,12 +3,12 @@ __author__ = 'Mario'
 import wx
 import wx.xrc
 import wx.aui
-import pygame
 
 from Simulation import SimulationCtrl
-from PyGamePanel import PyPanel
 from os.path import isfile
-from FloatCanvasFrame import DrawFrame
+from CanvasView import Canvas
+from wx.lib.floatcanvas import NavCanvas
+from wx.lib.floatcanvas import FloatCanvas as FC
 
 ###########################################################################
 ## Class MyFrame1
@@ -34,12 +34,23 @@ class MyFrame1 ( wx.Frame ):
 
         self.pnlSimulation = SimulationCtrl(self.pnlDocking)
 
-        self.m_mgr.AddPane(self.pnlSimulation, wx.aui.AuiPaneInfo().Left().CloseButton( False ).MaximizeButton( True ).MinimizeButton( True ).PinButton( True ).Resizable().MinSize(wx.Size(300,300)).Floatable() )
+        self.m_mgr.AddPane(self.pnlSimulation, wx.aui.AuiPaneInfo().Left().CloseButton( False )
+                           .MaximizeButton( True ).MinimizeButton( True ).PinButton( True ).Resizable()
+                           .MinSize(wx.Size(300,300)).Floatable() )
 
         #self.pnlPy = PyPanel(self.pnlDocking)
-        self.pnlPy = DrawFrame(self.pnlDocking)
+        #self.pnlPy = DrawFrame(self.pnlDocking)
 
-        self.m_mgr.AddPane(self.pnlPy, wx.aui.AuiPaneInfo().Center().Position(0).CloseButton( False ).MaximizeButton( True ).MinimizeButton( True ).PinButton( True ).Resizable().Floatable() )
+        canvas = Canvas(parent=self.pnlDocking,
+                                  ProjectionFun = None,
+                                  Debug = 0,
+                                  BackgroundColor = "White",
+                                  )
+
+
+        self.m_mgr.AddPane(canvas, wx.aui.AuiPaneInfo().Center().Name("Canvas").Position(0)
+                           .CloseButton( False ).MaximizeButton( True ).MinimizeButton( True )
+                           .PinButton( True ).Resizable().Floatable().Movable().MinSize(wx.Size(1000,400)) )
 
         #self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSel)
         '''

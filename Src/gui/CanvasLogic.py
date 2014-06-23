@@ -3,23 +3,53 @@ __author__ = 'Mario'
 import wx
 
 ver = 'local'
-#ver = 'installed'
 
-if ver == 'installed': ## import the installed version
-    from wx.lib.floatcanvas import NavCanvas, Resources
-    from wx.lib.floatcanvas import FloatCanvas as FC
-    from wx.lib.floatcanvas.Utilities import BBox
-    print "using installed version:", wx.lib.floatcanvas.__version__
-elif ver == 'local':
-    ## import a local version
-    import sys
-    sys.path.append("..")
-    from wx.lib.floatcanvas import NavCanvas,  Resources
-    from wx.lib.floatcanvas import FloatCanvas as FC
-    from wx.lib.floatcanvas.Utilities import BBox
+import sys
+sys.path.append("..")
+from wx.lib.floatcanvas import NavCanvas,  Resources
+from wx.lib.floatcanvas import FloatCanvas as FC
+from wx.lib.floatcanvas.Utilities import BBox
 
 import numpy as N
+class CanvasLogic:
+    def __init__(Canvas, Model):
+        self.Canvas=Canvas
+        self.Model=Model
+        self.initBindings()
 
+
+    def initBindings(self):
+        self.Canvas.Bind(FC.EVT_MOTION, self.OnMove )
+        self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
+
+    def OnMove(self, event):
+        """
+        Updates the status bar with the world coordinates
+        and moves the object it is clicked on
+
+        """
+        #self.SetStatusText("%.4f, %.4f"%tuple(event.Coords))
+
+        if self.Moving:
+            dxy = event.GetPosition() - self.StartPoint
+            # Draw the Moving Object:
+            dc = wx.ClientDC(self.Canvas)
+            dc.SetPen(wx.Pen('WHITE', 2, wx.SHORT_DASH))
+            dc.SetBrush(wx.TRANSPARENT_BRUSH)
+            dc.SetLogicalFunction(wx.XOR)
+            if self.MoveObject is not None:
+                dc.DrawPolygon(self.MoveObject)
+            self.MoveObject = self.StartObject + dxy
+            dc.DrawPolygon(self.MoveObject)
+
+    def OnLeftUp(self, event):
+        if self.Moving:
+            self.Moving = False
+            if self.MoveObject is not None:
+                dxy = event.GetPosition() - self.StartPoint
+                dxy = self.Canvas.ScalePixelToWorld(dxy)
+                self.MovingObject.Move(dxy)
+            self.Canvas.Draw(True)
 
 class MovingObjectMixin:
     """
@@ -207,9 +237,6 @@ class TriangleShape1(FC.Polygon, MovingObjectMixin):
 
         Points += XY
         return Points
-
-### Tree Utilities
-### And some hard coded data...
 
 class TreeNode:
     dx = 15

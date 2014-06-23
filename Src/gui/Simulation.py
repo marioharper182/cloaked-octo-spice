@@ -12,7 +12,7 @@ import wx
 import wx.xrc
 from os.path import isfile
 from ResultsDisplay import ModelFrame
-from FloatCanvasFrame import DrawFrame
+from CanvasView import Canvas
 
 
 ###########################################################################
