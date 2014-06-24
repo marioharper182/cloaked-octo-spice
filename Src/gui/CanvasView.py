@@ -31,10 +31,10 @@ Model1 = TreeNode("Model1", [VP1, VP2])
 Model2 = TreeNode("Model2", [TreeNode("Result1"), TreeNode("Result2")])
 elements = TreeNode("Root", [Model1, Model2])
 '''
-Result = TreeNode("Result")
-Branch1 = TreeNode("Branch1", [Result])
-elements1 = TreeNode("None1", [Branch1])
-elements2 = TreeNode("None2", [Branch1])
+#Result = TreeNode("Result")
+#Branch1 = TreeNode("Branch1", [Result])
+elements1 = TreeNode("None1")
+#elements2 = TreeNode("None2", [Branch1])
 
 class Canvas(NavCanvas.NavCanvas):
 
@@ -46,11 +46,11 @@ class Canvas(NavCanvas.NavCanvas):
         self.elements1 = elements1
         LayoutTree(self.elements1, 0, 0, 3)
         self.AddTree(self.elements1)
-
+        '''
         self.elements2 = elements2
         LayoutTree(self.elements2, 0, 0, 1)
         self.AddTree(self.elements2)
-
+        '''
 
         self.Canvas.ZoomToBB()
         self.MoveObject = None

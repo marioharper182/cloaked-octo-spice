@@ -12,8 +12,9 @@ import os
 import wx
 import wx.xrc
 
-from DirectoryLstCtrl import MyListCtrl
+from DirectoryLstCtrl import DirectoryListCtrl
 from images import icons
+from wx.lib.pubsub import pub as Publisher
 
 
 ###########################################################################
@@ -22,7 +23,7 @@ from images import icons
 [PreviousID, UpID, HomeID, SaveID, RefreshID, TerminalID, HelpID] = [wx.NewId() for _init_ctrls in range(7)]
 
 
-class directoryCtrlPanel(wx.Panel):
+class DirectoryCtrlView(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.Size(500, 300),
                           style=wx.TAB_TRAVERSAL)
@@ -38,7 +39,7 @@ class directoryCtrlPanel(wx.Panel):
         listCtrlSizer = wx.BoxSizer(wx.VERTICAL)
 
         listCtrlSizer.SetMinSize(wx.Size(800, 600))
-        self.dirCtrl = MyListCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(1000, 400), wx.LC_REPORT)
+        self.dirCtrl = DirectoryListCtrl(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(1000, 400), wx.LC_REPORT)
         listCtrlSizer.Add(self.dirCtrl, 0, wx.ALL, 5)
 
         bSizer4 = wx.BoxSizer(wx.VERTICAL)
@@ -53,6 +54,8 @@ class directoryCtrlPanel(wx.Panel):
 
         self.SetSizer(panelSizer)
         self.Layout()
+
+        self.sb.SetValue(os.getcwd())
 
     def initBindings(self):
         # # List control events
@@ -79,7 +82,6 @@ class directoryCtrlPanel(wx.Panel):
         toolbar.Realize()
         return toolbar
 
-
     def OnExit(self, e):
         self.Close(True)
 
@@ -92,6 +94,7 @@ class directoryCtrlPanel(wx.Panel):
     def OnDClick(self, event):
         ## Check if clicked Item is a directory
         dirpath = os.path.join(os.getcwd(), event.GetText())
+        print "Dirpath is a file?: ", os.path.isfile(dirpath)
         if os.path.isdir(dirpath):
             print "Changing path to: ", dirpath
             try:
@@ -101,6 +104,12 @@ class directoryCtrlPanel(wx.Panel):
                 self.directoryStack.append(os.getcwd())
                 os.chdir('..')
                 print "WindowsError! ", e
+        elif os.path.isfile(dirpath):
+            fileName, fileExtension = os.path.splitext(dirpath)
+            print "Execute me", fileExtension
+            if fileExtension == ".txt" or fileExtension == ".py":
+                Publisher.sendMessage('createBox', filepath=dirpath)
+
         self.dirCtrl.clearItems()
 
 
@@ -108,19 +117,19 @@ class directoryCtrlPanel(wx.Panel):
     def OnHomeClick(self, event):
         dirpath = os.path.abspath("C:\\")
         try:
+            self.directoryStack.append(os.getcwd())
             os.chdir(dirpath)
             print "You have returned home: ", dirpath
-            self.directoryStack.append(dirpath)
             self.dirCtrl.clearItems()
         except:
             print 'Crap happened on the way home'
 
 
     def OnBackClick(self, event):
+        print "directory Stack: ", self.directoryStack
         if len(self.directoryStack) > 0:
             os.chdir(self.directoryStack.pop())
             self.dirCtrl.clearItems()
-
 
     def onDrag(self, event):
         data = wx.FileDataObject()

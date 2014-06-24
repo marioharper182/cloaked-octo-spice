@@ -1,3 +1,4 @@
+
 __author__ = 'Mario'
 
 import wx
@@ -9,20 +10,27 @@ import sys
 sys.path.append("..")
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.Utilities import BBox
-
+from wx.lib.pubsub import pub as Publisher
 import numpy as N
 
 
 class CanvasLogic:
-    def __init__(self, Canvas, Model):
+    def __init__(self, Canvas, Model=None):
         self.Canvas = Canvas
         self.Model = Model
         self.initBindings()
-
+        self.initSubscribers()
 
     def initBindings(self):
         self.Canvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
+
+    def initSubscribers(self):
+        Publisher.subscribe(self.createBox, "createBox")
+
+    def createBox(self, filepath):
+        ## Build a box with a filepath
+        print "I LIVE: ", filepath
 
     def OnMove(self, event):
         """
@@ -53,7 +61,6 @@ class CanvasLogic:
                 self.MovingObject.Move(dxy)
             self.Canvas.Draw(True)
 
-
 class MovingObjectMixin:
     """
     Methods required for a Moving object
@@ -75,7 +82,6 @@ class MovingObjectMixin:
             ))
 
         return OutlinePoints
-
 
 class ConnectorObjectMixin:
     """
