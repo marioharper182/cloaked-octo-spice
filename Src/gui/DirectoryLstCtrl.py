@@ -4,7 +4,7 @@ import os
 import time
 
 import wx
-
+from images import icons
 
 ID_BUTTON = 100
 ID_EXIT = 200
@@ -17,15 +17,14 @@ class MyListCtrl(wx.ListCtrl):
 
         files = os.listdir('.')
         self.home = os.path.abspath("C:\\")
-        print "HOME!", self.home
 
-        images = ['images/folder-documents.png', 'images/folder.png']
+        images = [icons.folder_documents.GetBitmap(), icons.folder.GetBitmap()]
         # # , 'images/source_py.png', 'images/image.png', 'images/pdf.png', 'images/up16.png'
 
         self.InsertColumn(0, 'Name')
-        self.InsertColumn(1, 'Ext')
-        self.InsertColumn(2, 'Size', wx.LIST_FORMAT_RIGHT)
-        self.InsertColumn(3, 'Modified')
+        self.InsertColumn(1, 'Ext', wx.LIST_FORMAT_LEFT)
+        self.InsertColumn(2, 'Size', wx.LIST_FORMAT_LEFT)
+        self.InsertColumn(3, 'Modified', wx.LIST_FORMAT_LEFT)
 
         self.SetColumnWidth(0, 150)
         self.SetColumnWidth(1, 40)
@@ -34,7 +33,7 @@ class MyListCtrl(wx.ListCtrl):
 
         self.il = wx.ImageList(16, 16)
         for i in images:
-            self.il.Add(wx.Bitmap(i))
+            self.il.Add(i)
         self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
         self.refreshList(files)
 
