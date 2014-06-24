@@ -7,16 +7,12 @@ from wx.lib.floatcanvas import NavCanvas
 from wx.lib.floatcanvas import FloatCanvas as FC
 
 from CanvasLogic import LayoutTree, NodeObject, MovingTextBox, TraverseTree, ConnectorLine
-#from Simulation import f
-
-#print f
 
 class TreeNode:
     dx = 15
     dy = 4
     def __init__(self, name, Children = []):
         self.Name = name
-        #self.parent = None -- Is this needed?
         self.Children = Children
         self.Point = None # The coords of the node.
 
@@ -26,34 +22,34 @@ class TreeNode:
 
 
 ## Build Tree:
+'''
 leaves = [TreeNode(name) for name in ["Result 1","Result 2"] ]
 VP1 = TreeNode("Subset1", Children = leaves)
-VP2 = TreeNode("IsolatedeResult1")
+VP2 = TreeNode("IsolatedResult1")
 
 Model1 = TreeNode("Model1", [VP1, VP2])
 Model2 = TreeNode("Model2", [TreeNode("Result1"), TreeNode("Result2")])
 elements = TreeNode("Root", [Model1, Model2])
-
-
+'''
+Result = TreeNode("Result")
+Branch1 = TreeNode("Branch1", [Result])
+elements1 = TreeNode("None1", [Branch1])
+elements2 = TreeNode("None2", [Branch1])
 
 class Canvas(NavCanvas.NavCanvas):
 
-    """
-    A simple frame, call this class for the button
-
-    """
 
     def __init__(self, *args, **kwargs):
         NavCanvas.NavCanvas.__init__(self, *args,**kwargs)
 
-        #self.CreateStatusBar()
-        # Add the Canvas
 
+        self.elements1 = elements1
+        LayoutTree(self.elements1, 0, 0, 3)
+        self.AddTree(self.elements1)
 
-
-        self.elements = elements
-        LayoutTree(self.elements, 0, 0, 3)
-        self.AddTree(self.elements)
+        self.elements2 = elements2
+        LayoutTree(self.elements2, 0, 0, 1)
+        self.AddTree(self.elements2)
 
 
         self.Canvas.ZoomToBB()
@@ -68,12 +64,6 @@ class Canvas(NavCanvas.NavCanvas):
         self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
 
     def OnMove(self, event):
-        """
-        Updates the status bar with the world coordinates
-        and moves the object it is clicked on
-
-        """
-        #self.SetStatusText("%.4f, %.4f"%tuple(event.Coords))
 
         if self.Moving:
             dxy = event.GetPosition() - self.StartPoint

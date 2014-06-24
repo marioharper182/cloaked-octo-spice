@@ -12,7 +12,7 @@ from wx.lib.floatcanvas.Utilities import BBox
 
 import numpy as N
 class CanvasLogic:
-    def __init__(Canvas, Model):
+    def __init__(self, Canvas, Model):
         self.Canvas=Canvas
         self.Model=Model
         self.initBindings()
@@ -246,20 +246,6 @@ class TreeNode:
         #self.parent = None -- Is this needed?
         self.Children = Children
         self.Point = None # The coords of the node.
-
-    def __str__(self):
-        return "TreeNode: %s"%self.Name
-    __repr__ = __str__
-
-
-## Build Tree:
-leaves = [TreeNode(name) for name in ["Result 1","Result 2"] ]
-VP1 = TreeNode("Subset1", Children = leaves)
-VP2 = TreeNode("IsolatedeResult1")
-
-Model1 = TreeNode("Model1", [VP1, VP2])
-Model2 = TreeNode("Model2", [TreeNode("Result1"), TreeNode("Result2")])
-elements = TreeNode("Root", [Model1, Model2])
 
 def LayoutTree(root, x, y, level):
     NumNodes = len(root.Children)
