@@ -1,7 +1,7 @@
 __author__ = 'Mario'
 
 import wx
-import pygame
+#import pygame
 #from Frame import MyFrame1
 
 class PygameDisplay(wx.Window):

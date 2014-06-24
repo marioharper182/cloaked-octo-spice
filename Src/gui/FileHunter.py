@@ -1,12 +1,15 @@
 #!/usr/bin/python
 
-import wx
 import os
 import time
 
-ID_BUTTON=100
-ID_EXIT=200
-ID_SPLITTER=300
+import wx
+
+
+ID_BUTTON = 100
+ID_EXIT = 200
+ID_SPLITTER = 300
+
 
 class MyListCtrl(wx.ListCtrl):
     def __init__(self, parent, id):
@@ -17,7 +20,7 @@ class MyListCtrl(wx.ListCtrl):
         print "HOME!", self.home
 
         images = ['images/folder-documents.png', 'images/folder.png']
-        ## , 'images/source_py.png', 'images/image.png', 'images/pdf.png', 'images/up16.png'
+        # # , 'images/source_py.png', 'images/image.png', 'images/pdf.png', 'images/up16.png'
 
         self.InsertColumn(0, 'Name')
         self.InsertColumn(1, 'Ext')
@@ -48,8 +51,7 @@ class MyListCtrl(wx.ListCtrl):
             self.InsertStringItem(j, name)
             self.SetStringItem(j, 1, ex)
             self.SetStringItem(j, 2, str(size) + ' B')
-            self.SetStringItem(j, 3, time.strftime('%Y-%m-%d %H:%M',
-        time.localtime(sec)))
+            self.SetStringItem(j, 3, time.strftime('%Y-%m-%d %H:%M', time.localtime(sec)))
 
             if os.path.isdir(i):
                 self.SetItemImage(j, 1)
@@ -72,12 +74,13 @@ class MyListCtrl(wx.ListCtrl):
         self.DeleteAllItems()
         self.refreshList(os.listdir('.'))
 
+
 class poplistcontrol(wx.ListCtrl):
     def __init__(self, parent, id):
         wx.ListCtrl.__init__(self, parent, id, style=wx.LC_REPORT)
 
         self.InsertColumn(0, 'Name')
-        #self.InsertColumn(1, 'Ext')
+        # self.InsertColumn(1, 'Ext')
         #self.InsertColumn(2, 'Size', wx.LIST_FORMAT_RIGHT)
         #self.InsertColumn(3, 'Modified')
 
@@ -93,15 +96,11 @@ class FileDrop(wx.FileDropTarget):
         self.window = window
 
     def OnDropFiles(self, x, y, filenames):
-
         for name in filenames:
-
             file = open(name, 'r')
 
 
-
 class FileHunter(wx.Frame):
-
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, -1, title)
 
@@ -109,15 +108,15 @@ class FileHunter(wx.Frame):
         self.splitter.SetMinimumPaneSize(50)
 
         self.p1 = MyListCtrl(self.splitter, -1)
-        self.p2 = poplistcontrol(self.splitter, -1)
-        self.splitter.SplitVertically(self.p1, self.p2)
+        #self.p2 = poplistcontrol(self.splitter, -1)
+        #self.splitter.SplitVertically(self.p1, self.p2)
 
         ## Other
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_SPLITTER_DCLICK, self.OnDoubleClick, id=ID_SPLITTER)
 
         ## List control events
-        self.p1.Bind(wx.EVT_LIST_ITEM_SELECTED,self.OnClick)
+        self.p1.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnClick)
         self.p1.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnDClick)
 
         ## Toolbar events
@@ -130,8 +129,8 @@ class FileHunter(wx.Frame):
 
 
         ## Drop Target
-        dt = FileDrop(self.p2)
-        self.p2.SetDropTarget(dt)
+        #dt = FileDrop(self.p2)
+        #self.p2.SetDropTarget(dt)
         #self.p2.InsertItem()
         '''
         DropTarget = FileDrop(self.p2)
@@ -139,8 +138,8 @@ class FileHunter(wx.Frame):
         self.p2.InsertColumn(0, 'Filename')
         self.Bind(wx.EVT_LIST_BEGIN_DRAG, self)
         '''
-        filemenu= wx.Menu()
-        filemenu.Append(ID_EXIT,"&Exit"," Terminate the program")
+        filemenu = wx.Menu()
+        filemenu.Append(ID_EXIT, "&Exit", " Terminate the program")
         editmenu = wx.Menu()
         netmenu = wx.Menu()
         showmenu = wx.Menu()
@@ -148,7 +147,7 @@ class FileHunter(wx.Frame):
         helpmenu = wx.Menu()
 
         menuBar = wx.MenuBar()
-        menuBar.Append(filemenu,"&File")
+        menuBar.Append(filemenu, "&File")
         menuBar.Append(editmenu, "&Edit")
         menuBar.Append(netmenu, "&Net")
         menuBar.Append(showmenu, "&Show")
@@ -157,8 +156,7 @@ class FileHunter(wx.Frame):
         self.SetMenuBar(menuBar)
         self.Bind(wx.EVT_MENU, self.OnExit, id=ID_EXIT)
 
-        tb = self.CreateToolBar( wx.TB_HORIZONTAL | wx.NO_BORDER |
-        wx.TB_FLAT | wx.TB_TEXT)
+        tb = self.CreateToolBar(wx.TB_HORIZONTAL | wx.NO_BORDER | wx.TB_FLAT | wx.TB_TEXT)
         tb.AddSimpleTool(10, wx.Bitmap('images/go-previous.png'), 'Previous')
         tb.AddSimpleTool(20, wx.Bitmap('images/go-up.png'), 'Up one directory')
         tb.AddSimpleTool(30, wx.Bitmap('images/go-home.png'), 'Home')
@@ -174,6 +172,7 @@ class FileHunter(wx.Frame):
 
         self.sizer2 = wx.BoxSizer(wx.HORIZONTAL)
 
+        '''
         button1 = wx.Button(self, ID_BUTTON + 1, "F3 View")
         button2 = wx.Button(self, ID_BUTTON + 2, "F4 Edit")
         button3 = wx.Button(self, ID_BUTTON + 3, "F5 Copy")
@@ -193,10 +192,11 @@ class FileHunter(wx.Frame):
         self.sizer2.Add(button8, 1, wx.EXPAND)
 
         self.Bind(wx.EVT_BUTTON, self.OnExit, id=ID_EXIT)
+        '''
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.splitter,1,wx.EXPAND)
-        self.sizer.Add(self.sizer2,0,wx.EXPAND)
+        self.sizer.Add(self.splitter, 1, wx.EXPAND)
+        #self.sizer.Add(self.sizer2,0,wx.EXPAND)
         self.SetSizer(self.sizer)
 
         size = wx.DisplaySize()
@@ -207,7 +207,7 @@ class FileHunter(wx.Frame):
         self.Center()
         self.Show(True)
 
-    def OnExit(self,e):
+    def OnExit(self, e):
         self.Close(True)
 
     def OnSize(self, event):
@@ -217,7 +217,7 @@ class FileHunter(wx.Frame):
         event.Skip()
 
     def OnDoubleClick(self, event):
-        size =  self.GetSize()
+        size = self.GetSize()
         self.splitter.SetSashPosition(size.x / 2)
 
     ## List control events
@@ -241,7 +241,7 @@ class FileHunter(wx.Frame):
         self.p1.clearItems()
 
     ## Tool bar events
-    def OnHomeClick (self, event):
+    def OnHomeClick(self, event):
         dirpath = self.p1.home
         try:
             os.chdir(dirpath)

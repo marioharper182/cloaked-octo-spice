@@ -1,56 +1,57 @@
+from Src.gui.directoryCtrlPanel import directoryCtrlPanel
+
 __author__ = 'Mario'
+
+from os.path import isfile
 
 import wx
 import wx.xrc
 import wx.aui
-
-from Simulation import SimulationCtrl
-from os.path import isfile
-from CanvasView import Canvas
 from wx.lib.floatcanvas import NavCanvas
 from wx.lib.floatcanvas import FloatCanvas as FC
 
-###########################################################################
+from DirectoryCtrl import SimulationCtrl
+from CanvasView import Canvas
+
+
+# ##########################################################################
 ## Class MyFrame1
 ###########################################################################
 
-class MyFrame1 ( wx.Frame ):
+class MyFrame1(wx.Frame):
+    def __init__(self, parent):
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition,
+                          size=wx.Size(1000, 600), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
-    def __init__( self, parent):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 900,600 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
-
-        self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+        self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
 
         self.pnlDocking = wx.Panel(id=wx.ID_ANY, name='pnlDocking', parent=self, size=wx.Size(605, 458),
                                    style=wx.TAB_TRAVERSAL)
 
         self.m_mgr = wx.aui.AuiManager()
-        self.m_mgr.SetManagedWindow( self.pnlDocking )
+        self.m_mgr.SetManagedWindow(self.pnlDocking)
         self.m_mgr.SetFlags(wx.aui.AUI_MGR_DEFAULT)
 
         #self.m_mgr.AddPane( self.pnlDocking, wx.aui.AuiPaneInfo() .Right() .CloseButton( False) .PinButton( True ).Dock().Resizable().FloatingSize( wx.Size( 344,248 ) ).DockFixed( False ).Layer( 2 ) )
         #self.m_treeCtrl1 = wx.TreeCtrl( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE )
         #self.m_mgr.AddPane( self.m_treeCtrl1, wx.aui.AuiPaneInfo() .Left() .CloseButton( False ).MaximizeButton( True ).MinimizeButton( True ).PinButton( True ).Dock().Resizable().FloatingSize( wx.DefaultSize ).DockFixed( False ) )
 
-        self.pnlSimulation = SimulationCtrl(self.pnlDocking)
+        #self.pnlSimulation = SimulationCtrl(self.pnlDocking)
+        self.m_directoryCtrl = directoryCtrlPanel(self.pnlDocking)
 
-        self.m_mgr.AddPane(self.pnlSimulation, wx.aui.AuiPaneInfo().Left().CloseButton( False )
-                           .MaximizeButton( True ).MinimizeButton( True ).PinButton( True ).Resizable()
-                           .MinSize(wx.Size(300,300)).Floatable() )
+        self.m_mgr.AddPane(self.m_directoryCtrl,
+                           wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
+                               True).PinButton(True).Resizable().MinSize(wx.Size(500, 500)).Floatable())
 
         #self.pnlPy = PyPanel(self.pnlDocking)
         #self.pnlPy = DrawFrame(self.pnlDocking)
 
-        canvas = Canvas(parent=self.pnlDocking,
-                                  ProjectionFun = None,
-                                  Debug = 0,
-                                  BackgroundColor = "White",
-                                  )
+        canvas = Canvas(parent=self.pnlDocking, ProjectionFun=None, Debug=0, BackgroundColor="White", )
 
-
-        self.m_mgr.AddPane(canvas, wx.aui.AuiPaneInfo().Center().Name("Canvas").Position(0)
-                           .CloseButton( False ).MaximizeButton( True ).MinimizeButton( True )
-                           .PinButton( True ).Resizable().Floatable().Movable().MinSize(wx.Size(1000,400)) )
+        self.m_mgr.AddPane(canvas,
+                           wx.aui.AuiPaneInfo().Center().Name("Canvas").Position(0).CloseButton(False).MaximizeButton(
+                               True).MinimizeButton(True).PinButton(True).Resizable().Floatable().Movable().MinSize(
+                               wx.Size(1000, 400)))
 
         #self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSel)
         '''
@@ -76,36 +77,40 @@ class MyFrame1 ( wx.Frame ):
         self.m_mgr.AddPane( self.m_button2, wx.aui.AuiPaneInfo() .Left() .CloseButton( False ).PinButton( True ).Dock().Resizable().FloatingSize( wx.Size( 104,60 ) ).DockFixed( False ).Layer( 0 ) )
         '''
         self.m_mgr.Update()
-        self.Centre( wx.BOTH )
+        self.Centre(wx.BOTH)
 
         ## Menu stuff
-        self.m_statusBar2 = self.CreateStatusBar( 1, wx.ST_SIZEGRIP, wx.ID_ANY )
-        self.m_menubar2 = wx.MenuBar( 0 )
+        self.m_statusBar2 = self.CreateStatusBar(1, wx.ST_SIZEGRIP, wx.ID_ANY)
+        self.m_menubar2 = wx.MenuBar(0)
         self.m_menu3 = wx.Menu()
-        self.m_menubar2.Append( self.m_menu3, u"File" )
+        self.m_menubar2.Append(self.m_menu3, u"File")
 
         self.m_menu4 = wx.Menu()
-        self.m_menubar2.Append( self.m_menu4, u"Tools" )
-        self.SetMenuBar( self.m_menubar2 )
+        self.m_menubar2.Append(self.m_menu4, u"Tools")
+        self.SetMenuBar(self.m_menubar2)
 
         self.m_menu5 = wx.Menu()
         self.m_menubar2.Append(self.m_menu5, u"View")
-        self.SetMenuBar( self.m_menubar2)
+        self.SetMenuBar(self.m_menubar2)
 
         #print dir(item)
         #print "Type: ", type(item)
+
     #def BindEvents(self):
 
 
-    def __del__( self ):
+    def __del__(self):
         self.m_mgr.UnInit()
 
+
 class SimpleFrame(MyFrame1):
-    def __init__(self,parent):
+    def __init__(self, parent):
         MyFrame1.__init__(self, parent)
+
 
     def clearFunc(self, event):
         self.edit.SetValue("")
+
 
 app = wx.App(False)
 frame = SimpleFrame(None)
