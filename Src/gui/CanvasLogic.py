@@ -68,7 +68,6 @@ class MovingObjectMixin:
     Methods required for a Moving object
 
     """
-
     def GetOutlinePoints(self):
         """
         Returns a set of points with which to draw the outline when moving the
@@ -210,8 +209,8 @@ class TriangleShape1(FC.Polygon, MovingObjectMixin):
                             FillStyle="Solid")
 
     # # Override the default OutlinePoints
-    def GetOutlinePoints(self):
-        return self.Points
+    #def GetOutlinePoints(self):
+        #return self.Points
 
     def CompPoints(self, XY, L):
         c = L / N.sqrt(3)

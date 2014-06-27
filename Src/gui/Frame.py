@@ -9,6 +9,8 @@ import wx.aui
 from CanvasView import Canvas
 from CanvasLogic import CanvasLogic
 from DirectoryView import DirectoryCtrlView
+import wx.lib.floatcanvas.FloatCanvas as FC
+import wx.lib.floatcanvas.NavCanvas as NC
 
 
 # ##########################################################################
@@ -23,6 +25,17 @@ class FileDrop(wx.FileDropTarget):
     def OnDropFiles(self, x, y, filenames):
         print "filename: {2} x: {0} y: {1}".format(x,y, filenames)
 
+        #Canvas = NC.NavCanvas(self, -1, size=wx.DefaultSize).Canvas
+        #Canvas.AddRectangle((110, 10), (100, 100), FillColor='Red')
+        print x,y
+        originx, originy = self.window.Canvas.PixelToWorld((0,0))
+        #ar = self.window.Canvas.ScreenPosition
+        #x-= ar[0]
+        x = x +originx
+        y = originy - y
+        #x, y = self.window.Canvas.WorldToPixel((nx,ny))
+        #print x,y
+        #x = y = 0
         self.window.createBox(filepath=filenames.pop(), xCoord=x, yCoord=y)
         self.window.Canvas.Draw()
 
@@ -51,7 +64,7 @@ class MainFrame(wx.Frame):
         self.m_directoryCtrl = DirectoryCtrlView(self.pnlDocking)
         self.m_mgr.AddPane(self.m_directoryCtrl,
                            wx.aui.AuiPaneInfo().Left().CloseButton(False).MaximizeButton(True).MinimizeButton(
-                               True).PinButton(True).Resizable().MinSize(wx.Size(500, 500)).Floatable())
+                               True).PinButton(True).Resizable().MinSize(wx.Size(375,500)).Floatable())
 
         self.canvas = Canvas(parent=self.pnlDocking, ProjectionFun=None, Debug=0, BackgroundColor="White", )
         self.m_mgr.AddPane(self.canvas,

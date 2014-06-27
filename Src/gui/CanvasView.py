@@ -8,7 +8,9 @@ from wx.lib.floatcanvas import NavCanvas
 from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.pubsub import pub as Publisher
 import os
-from numpy import random
+import numpy as N
+import textwrap as tw
+
 
 from CanvasLogic import LayoutTree, NodeObject, MovingTextBox, TraverseTree, ConnectorLine
 
@@ -25,39 +27,16 @@ class TreeNode:
     __repr__ = __str__
 
 
-## Build Tree:
-'''
-leaves = [TreeNode(name) for name in ["Result 1","Result 2"] ]
-VP1 = TreeNode("Subset1", Children = leaves)
-VP2 = TreeNode("IsolatedResult1")
-
-Model1 = TreeNode("Model1", [VP1, VP2])
-Model2 = TreeNode("Model2", [TreeNode("Result1"), TreeNode("Result2")])
-elements = TreeNode("Root", [Model1, Model2])
-'''
-#Result = TreeNode("Result")
-#Branch1 = TreeNode("Branch1", [Result])
-#elements1 = TreeNode("None1")
-#elements2 = TreeNode("None2", [Branch1])
 
 class Canvas(NavCanvas.NavCanvas):
 
     def __init__(self, *args, **kwargs):
         NavCanvas.NavCanvas.__init__(self, *args,**kwargs)
         self.initSubscribers()
-        #self.createBox()
         self.models = {}
 
-        #self.elements1 = elements1
-        #LayoutTree(self.elements1, 0, 0, 3)
-        #self.AddTree(self.elements1)
 
-        #self.elements2 = TreeNode("Hi")
-        #LayoutTree(self.elements2, 0, 0, 1)
-        #self.AddTree(self.elements2)
-
-
-        #elf.UnBindAllMouseEvents()
+        self.UnBindAllMouseEvents()
         self.ZoomToFit(Event=None)
         self.MoveObject = None
         self.Moving = False
@@ -71,24 +50,7 @@ class Canvas(NavCanvas.NavCanvas):
         '''
 
         self.initBindings()
-    '''
-    def BindAllMouseEvents(self):
-        if not self.EventsAreBound:
-            ## Here is how you catch FloatCanvas mouse events
-            self.Canvas.Bind(FC.EVT_LEFT_DOWN, self.OnLeftDown)
-            self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
-            self.Canvas.Bind(FC.EVT_LEFT_DCLICK, self.OnLeftDouble)
 
-            self.Canvas.Bind(FC.EVT_MIDDLE_DOWN, self.OnMiddleDown)
-            self.Canvas.Bind(FC.EVT_MIDDLE_UP, self.OnMiddleUp)
-            self.Canvas.Bind(FC.EVT_MIDDLE_DCLICK, self.OnMiddleDouble)
-
-            self.Canvas.Bind(FC.EVT_RIGHT_DOWN, self.OnRightDown)
-            self.Canvas.Bind(FC.EVT_RIGHT_UP, self.OnRightUp)
-            self.Canvas.Bind(FC.EVT_RIGHT_DCLICK, self.OnRightDouble)
-
-        self.EventsAreBound = True
-    '''
 
     def UnBindAllMouseEvents(self):
         ## Here is how you unbind FloatCanvas mouse events
@@ -107,69 +69,61 @@ class Canvas(NavCanvas.NavCanvas):
         self.EventsAreBound = False
     def initBindings(self):
         self.Canvas.Bind(FC.EVT_MOTION, self.OnMove )
-        #self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
+        self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
+        self.Canvas.Bind(FC.EVT_RIGHT_DOWN, self.onRightDown)
+        self.Canvas.Bind(FC.EVT_LEFT_DOWN, self.onLeftDown)
 
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
 
     def createBox(self, xCoord, yCoord, filepath=None):
-        ## Build a box with a filepath
 
         if filepath:
-            #print os.path.basename(filepath)
-            #print "I LIVE: ", filepath
-            w, h = 180, 120
+            w, h = 360, 240
             WH = (w/2, h/2)
             x,y = xCoord, yCoord
-            FontSize = 8
+            FontSize = 14
             filename = os.path.basename(filepath)
-            #box = TreeNode(unicode(filename))
 
-            R = self.Canvas.AddRectangle((x, y), WH, LineWidth = 2, FillColor = "BLUE", InForeground = True)
+            R = self.Canvas.AddRectangle((x,y), WH, LineWidth = 2, FillColor = "BLUE")
             R.HitFill = True
             R.ID = filename
             R.Name = filename
-            self.Canvas.AddText(unicode(filename), (x,y), Size = FontSize)
+            wrappedtext = tw.wrap(unicode(filename), 16)
+            print wrappedtext
+            label = self.Canvas.AddText("\n".join(wrappedtext), (x+1, y+h/2),
+                                        Color = "White",  Size = FontSize,
+                                        Weight=wx.BOLD, Style=wx.ITALIC )
+            R.Text = label
+            print dir(label), label
             #R.Bind(FC.EVT_FC_LEFT_UP, self.OnLeftUp )
             R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
-            #R.Bind(FC.EVT_FC_MOTION, self.OnMove)
 
-
-            #self.element = box
-            #LayoutTree(self.element, 0,0, 3)
             self.models[filename]=R
-
-            #self.Canvas.Zoom(3)
-
-            #self.AddTree(box)
 
             self.Canvas.Draw()
 
         else:
             print "Nothing Selected"
 
-    def createLink(self):
-        pass
-    def OnMove2(self, evt):
-        print"Hello!"
+    def onLeftDown(self, event):
+        print event.GetPosition(),
+       # dxy = event.GetPosition() - self.StartPoint
+        dxy = self.Canvas.PixelToWorld(event.GetPosition())
+        print dxy
 
     def ObjectHit(self, object):
-        print "Object: ", object, dir(object)
         if not self.Moving:
-            try:
-                self.Moving = True
-                self.StartPoint = object.HitCoordsPixel
-                print "StartPoint: ", self.StartPoint
-                self.StartObject = self.Canvas.WorldToPixel(object.GetOutlinePoints())
-                print "Object.GetOutlinePoints(): ", object.GetOutlinePoints()
-                print "StartObject: ", self.StartObject
-                self.MoveObject = None
-                self.MovingObject = object
-            except Exception as e:
-                print "Error: ", e
-                self.Moving = False
+            self.Moving = True
+            self.StartPoint = object.HitCoordsPixel
 
-
+            BB = object.BoundingBox
+            OutlinePoints = N.array(
+            ( (BB[0, 0], BB[0, 1]), (BB[0, 0], BB[1, 1]), (BB[1, 0], BB[1, 1]), (BB[1, 0], BB[0, 1]),
+            ))
+            self.StartObject = self.Canvas.WorldToPixel(OutlinePoints)
+            self.MoveObject = None
+            self.MovingObject = object
 
     def OnMove(self, event):
 
@@ -190,68 +144,16 @@ class Canvas(NavCanvas.NavCanvas):
             self.Moving = False
             if self.MoveObject is not None:
                 dxy = event.GetPosition() - self.StartPoint
-                dxy = self.Canvas.ScalePixelToWorld(dxy)
-                self.MovingObject.Move(dxy)
+                (x,y) = self.Canvas.ScalePixelToWorld(dxy)
+                self.MovingObject.Move((x,y))
+                self.MovingObject.Text.Move((x, y))
             self.Canvas.Draw(True)
 
-    def AddTree(self, root):
-        Nodes = []
-        Connectors = []
-        EllipseW = 15
-        EllipseH = 4
-        def CreateObject(node):
-            if node.Children:
-                object = NodeObject(node.Name,
-                                    node.Point,
-                                    (15, 4),
-                                    BackgroundColor = "LIGHT BLUE",
-                                    TextColor = "Black",
-                                    )
-            else:
-                object = MovingTextBox(node.Name,
-                                    node.Point,
-                                    2.0,
-                                    BackgroundColor = "YELLOW",
-                                    Color = "Black",
-                                    Position = "cl",
-                                    PadSize = 1
-                                    )
-            node.DrawObject = object
-            Nodes.append(object)
-        def AddConnectors(node):
-            for child in node.Children:
-                Connector = ConnectorLine(node.DrawObject, child.DrawObject, LineWidth=3, LineColor="Red")
-                Connectors.append(Connector)
-        ## create the Objects
-        TraverseTree(root, CreateObject)
-        ## create the Connectors
-        TraverseTree(root, AddConnectors)
-        ## Add the connectors to the Canvas first, so they are underneath the nodes
-        self.Canvas.AddObjects(Connectors)
-        ## now add the nodes
-        self.Canvas.AddObjects(Nodes)
-        # Now bind the Nodes -- DrawObjects must be Added to a Canvas before they can be bound.
-        for node in Nodes:
-            #pass
-            node.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
+    def onRightDown(self, event):
+        print "Right Click"
+        self.Canvas.ClearAll()
+        self.Canvas.Draw()
 
-
-
-
-
-    def LayoutTree(root, x, y, level):
-        NumNodes = len(root.Children)
-        root.Point = (x,y)
-        x += root.dx
-        y += (root.dy * level * (NumNodes-1) / 2.0)
-        for node in root.Children:
-            LayoutTree(node, x, y, level-1)
-            y -= root.dy * level
-
-    def TraverseTree(root, func):
-        func(root)
-        for child in (root.Children):
-            TraverseTree(child, func)
 
 #class DrawFrame(wx.Frame):
 class MyFrame2(wx.Frame):
