@@ -12,6 +12,7 @@ from wx.lib.floatcanvas import FloatCanvas as FC
 from wx.lib.floatcanvas.Utilities import BBox
 from wx.lib.pubsub import pub as Publisher
 import numpy as N
+import os
 
 
 class CanvasLogic:
@@ -19,19 +20,20 @@ class CanvasLogic:
         self.Canvas = Canvas
         self.Model = Model
         self.initBindings()
-        self.initSubscribers()
+        self.Moving = False
+        #self.initSubscribers()
 
     def initBindings(self):
         self.Canvas.Bind(FC.EVT_MOTION, self.OnMove)
         self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
-
+    '''
     def initSubscribers(self):
         Publisher.subscribe(self.createBox, "createBox")
 
     def createBox(self, filepath):
         ## Build a box with a filepath
         print "I LIVE: ", filepath
-
+    '''
     def OnMove(self, event):
         """
         Updates the status bar with the world coordinates

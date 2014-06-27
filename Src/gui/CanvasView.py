@@ -2,9 +2,13 @@ __author__ = 'Mario'
 
 import wx
 import sys
+import random as rand
 sys.path.append("..")
 from wx.lib.floatcanvas import NavCanvas
 from wx.lib.floatcanvas import FloatCanvas as FC
+from wx.lib.pubsub import pub as Publisher
+import os
+from numpy import random
 
 from CanvasLogic import LayoutTree, NodeObject, MovingTextBox, TraverseTree, ConnectorLine
 
@@ -33,35 +37,139 @@ elements = TreeNode("Root", [Model1, Model2])
 '''
 #Result = TreeNode("Result")
 #Branch1 = TreeNode("Branch1", [Result])
-elements1 = TreeNode("None1")
+#elements1 = TreeNode("None1")
 #elements2 = TreeNode("None2", [Branch1])
 
 class Canvas(NavCanvas.NavCanvas):
 
-
     def __init__(self, *args, **kwargs):
         NavCanvas.NavCanvas.__init__(self, *args,**kwargs)
+        self.initSubscribers()
+        #self.createBox()
+        self.models = {}
+
+        #self.elements1 = elements1
+        #LayoutTree(self.elements1, 0, 0, 3)
+        #self.AddTree(self.elements1)
+
+        #self.elements2 = TreeNode("Hi")
+        #LayoutTree(self.elements2, 0, 0, 1)
+        #self.AddTree(self.elements2)
 
 
-        self.elements1 = elements1
-        LayoutTree(self.elements1, 0, 0, 3)
-        self.AddTree(self.elements1)
-        '''
-        self.elements2 = elements2
-        LayoutTree(self.elements2, 0, 0, 1)
-        self.AddTree(self.elements2)
-        '''
-
-        self.Canvas.ZoomToBB()
+        #elf.UnBindAllMouseEvents()
+        self.ZoomToFit(Event=None)
         self.MoveObject = None
         self.Moving = False
 
+        '''
+        for x in range(100):
+            w = rand.randint(3,1570)
+            h = rand.randint(3,1570)
+            WH = (w/2, h/2)
+            R = self.Canvas.AddRectangle((w, h), WH, LineWidth = 2, FillColor = "BLUE", InForeground = True)
+        '''
+
         self.initBindings()
+    '''
+    def BindAllMouseEvents(self):
+        if not self.EventsAreBound:
+            ## Here is how you catch FloatCanvas mouse events
+            self.Canvas.Bind(FC.EVT_LEFT_DOWN, self.OnLeftDown)
+            self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp)
+            self.Canvas.Bind(FC.EVT_LEFT_DCLICK, self.OnLeftDouble)
 
+            self.Canvas.Bind(FC.EVT_MIDDLE_DOWN, self.OnMiddleDown)
+            self.Canvas.Bind(FC.EVT_MIDDLE_UP, self.OnMiddleUp)
+            self.Canvas.Bind(FC.EVT_MIDDLE_DCLICK, self.OnMiddleDouble)
 
+            self.Canvas.Bind(FC.EVT_RIGHT_DOWN, self.OnRightDown)
+            self.Canvas.Bind(FC.EVT_RIGHT_UP, self.OnRightUp)
+            self.Canvas.Bind(FC.EVT_RIGHT_DCLICK, self.OnRightDouble)
+
+        self.EventsAreBound = True
+    '''
+
+    def UnBindAllMouseEvents(self):
+        ## Here is how you unbind FloatCanvas mouse events
+        self.Canvas.Unbind(FC.EVT_LEFT_DOWN)
+        self.Canvas.Unbind(FC.EVT_LEFT_UP)
+        self.Canvas.Unbind(FC.EVT_LEFT_DCLICK)
+
+        self.Canvas.Unbind(FC.EVT_MIDDLE_DOWN)
+        self.Canvas.Unbind(FC.EVT_MIDDLE_UP)
+        self.Canvas.Unbind(FC.EVT_MIDDLE_DCLICK)
+
+        self.Canvas.Unbind(FC.EVT_RIGHT_DOWN)
+        self.Canvas.Unbind(FC.EVT_RIGHT_UP)
+        self.Canvas.Unbind(FC.EVT_RIGHT_DCLICK)
+
+        self.EventsAreBound = False
     def initBindings(self):
         self.Canvas.Bind(FC.EVT_MOTION, self.OnMove )
-        self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
+        #self.Canvas.Bind(FC.EVT_LEFT_UP, self.OnLeftUp )
+
+    def initSubscribers(self):
+        Publisher.subscribe(self.createBox, "createBox")
+
+    def createBox(self, xCoord, yCoord, filepath=None):
+        ## Build a box with a filepath
+
+        if filepath:
+            #print os.path.basename(filepath)
+            #print "I LIVE: ", filepath
+            w, h = 180, 120
+            WH = (w/2, h/2)
+            x,y = xCoord, yCoord
+            FontSize = 8
+            filename = os.path.basename(filepath)
+            #box = TreeNode(unicode(filename))
+
+            R = self.Canvas.AddRectangle((x, y), WH, LineWidth = 2, FillColor = "BLUE", InForeground = True)
+            R.HitFill = True
+            R.ID = filename
+            R.Name = filename
+            self.Canvas.AddText(unicode(filename), (x,y), Size = FontSize)
+            #R.Bind(FC.EVT_FC_LEFT_UP, self.OnLeftUp )
+            R.Bind(FC.EVT_FC_LEFT_DOWN, self.ObjectHit)
+            #R.Bind(FC.EVT_FC_MOTION, self.OnMove)
+
+
+            #self.element = box
+            #LayoutTree(self.element, 0,0, 3)
+            self.models[filename]=R
+
+            #self.Canvas.Zoom(3)
+
+            #self.AddTree(box)
+
+            self.Canvas.Draw()
+
+        else:
+            print "Nothing Selected"
+
+    def createLink(self):
+        pass
+    def OnMove2(self, evt):
+        print"Hello!"
+
+    def ObjectHit(self, object):
+        print "Object: ", object, dir(object)
+        if not self.Moving:
+            try:
+                self.Moving = True
+                self.StartPoint = object.HitCoordsPixel
+                print "StartPoint: ", self.StartPoint
+                self.StartObject = self.Canvas.WorldToPixel(object.GetOutlinePoints())
+                print "Object.GetOutlinePoints(): ", object.GetOutlinePoints()
+                print "StartObject: ", self.StartObject
+                self.MoveObject = None
+                self.MovingObject = object
+            except Exception as e:
+                print "Error: ", e
+                self.Moving = False
+
+
 
     def OnMove(self, event):
 
@@ -129,13 +237,6 @@ class Canvas(NavCanvas.NavCanvas):
 
 
 
-    def ObjectHit(self, object):
-        if not self.Moving:
-            self.Moving = True
-            self.StartPoint = object.HitCoordsPixel
-            self.StartObject = self.Canvas.WorldToPixel(object.GetOutlinePoints())
-            self.MoveObject = None
-            self.MovingObject = object
 
 
     def LayoutTree(root, x, y, level):
@@ -166,6 +267,7 @@ class MyFrame2(wx.Frame):
                           BackgroundColor = "White",
                           )
         '''
+
 
 
 def SimpleFrame(parent):

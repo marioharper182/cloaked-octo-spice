@@ -15,6 +15,18 @@ from DirectoryView import DirectoryCtrlView
 # # Class MainFrame
 # ##########################################################################
 
+class FileDrop(wx.FileDropTarget):
+    def __init__(self, window):
+        wx.FileDropTarget.__init__(self)
+        self.window = window
+
+    def OnDropFiles(self, x, y, filenames):
+        print "filename: {2} x: {0} y: {1}".format(x,y, filenames)
+
+        self.window.createBox(filepath=filenames.pop(), xCoord=x, yCoord=y)
+        self.window.Canvas.Draw()
+
+
 class MainFrame(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title="", pos=wx.DefaultPosition,
@@ -48,6 +60,12 @@ class MainFrame(wx.Frame):
                                wx.Size(1000, 400)))
 
         self.m_mgr.Update()
+
+        ## Drag and drop
+        dt = FileDrop(self.canvas)
+        self.canvas.SetDropTarget(dt)
+
+
 
     def initMenu(self):
         ## Menu stuff

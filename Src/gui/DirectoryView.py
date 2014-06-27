@@ -65,6 +65,9 @@ class DirectoryCtrlView(wx.Panel):
         # # Toolbar events
         self.Bind(wx.EVT_TOOL, self.OnHomeClick, id=HomeID)
         self.Bind(wx.EVT_TOOL, self.OnBackClick, id=PreviousID)
+        self.Bind(wx.EVT_TOOL, self.OnUpClick, id=UpID)
+
+        self.Bind(wx.EVT_LIST_BEGIN_DRAG, self.onDrag)
 
     def iconToolBar(self):
         toolbar = wx.ToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TB_HORIZONTAL)
@@ -124,6 +127,10 @@ class DirectoryCtrlView(wx.Panel):
         except:
             print 'Crap happened on the way home'
 
+    def OnUpClick(self, event):
+        self.directoryStack.append(os.getcwd())
+        os.chdir(os.pardir)
+        self.dirCtrl.clearItems()
 
     def OnBackClick(self, event):
         print "directory Stack: ", self.directoryStack
@@ -144,4 +151,4 @@ class DirectoryCtrlView(wx.Panel):
         dropSource = wx.DropSource(obj)
         dropSource.SetData(data)
         result = dropSource.DoDragDrop()
-        print fullpath
+       #print fullpath
